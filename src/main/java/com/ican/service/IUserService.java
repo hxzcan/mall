@@ -6,7 +6,7 @@ import com.ican.pojo.User;
 
 
 /**
- * 用户服务层
+ * 用户服务接口层
  * Created with IntelliJ IDEA
  * Created By Administrator
  * Date: 2017/10/23 0023
@@ -85,4 +85,11 @@ public interface IUserService {
      * @return 用户的信息
      */
     ServiceResponse<User> getInformation(int userId);
+
+    /**
+     * 校验是否是管理员
+     * @param user 用户
+     * @return 结果码
+     */
+    ServiceResponse checkAdmin(User user);
 }

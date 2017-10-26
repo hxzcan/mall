@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
- * 用户服务层
+ * 用户服务逻辑层
  * Created with IntelliJ IDEA
  * Created By Administrator
  * Date: 2017/10/23 0023
@@ -199,7 +199,6 @@ public class UserServiceImpl implements IUserService {
         //如果是true,这个count(1)>0
         int resultCount=userMapper.checkPasswordByUserId(user.getId(),MD5Util.MD5EncodeUTF8(oldPassword));
         if (resultCount>0){
-            System.out.println("进入到这个方法"+resultCount);
             String MD5newPassword=MD5Util.MD5EncodeUTF8(newPassword);
             user.setPassword(MD5newPassword);
             int updateResult=userMapper.updateByPrimaryKeySelective(user);
@@ -253,4 +252,17 @@ public class UserServiceImpl implements IUserService {
         user.setPassword(StringUtils.EMPTY);
         return ServiceResponse.createBySuccess("登录成功",user);
     }
+
+    /**
+     * 校验是否是管理员
+     * @param user 用户
+     * @return 结果码
+     */
+    public ServiceResponse checkAdmin(User user){
+        if (user!=null&&user.getRole()==Constract.role.ROLE_ADMIN){
+            return ServiceResponse.createBySuccess();
+        }
+        return ServiceResponse.createByError();
+    }
+
 }
