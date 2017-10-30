@@ -18,4 +18,10 @@ public class Constract {
         int ROLE_CUSTOMER=1;//普通用户
         int ROLE_ADMIN=0;//管理员用户
     }
+
+    public interface ProductStatus{
+        int PRODUCT_ONLINE=1;//在卖
+        int PRODUCT_OFF_THE_SHELF=2;//下架
+        int PRODUCT_DELETE=3;//删除
+    }
 }

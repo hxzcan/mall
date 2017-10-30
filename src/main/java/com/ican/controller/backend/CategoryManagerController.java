@@ -119,4 +119,17 @@ public class CategoryManagerController {
             return ServiceResponse.createByError("不是管理员，没有权限");
         }
     }
+
+    /**
+     * app根据categoryId获取分类信息，是平级的属于同一个级别的，不递归
+     * @param parentId 分类id 默认是0
+     * @return 分类内容
+     */
+    @RequestMapping(value = "/getChild_parallelCategory_app.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServiceResponse getChildParallelCategoryApp(
+            @RequestParam(value ="parentId",defaultValue = "0") Integer parentId)
+    {
+        return iCategoryService.getChildParallelCategory(parentId);
+    }
 }
