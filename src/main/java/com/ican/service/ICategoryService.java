@@ -40,4 +40,11 @@ public interface ICategoryService {
      * @return
      */
     ServiceResponse getCategoryAndDeepChildCategory(Integer parentId);
+
+    //=============================前端=============================//
+    /**
+     * 查找父分类
+     * @return
+     */
+    ServiceResponse categoryFirstLevel();
 }

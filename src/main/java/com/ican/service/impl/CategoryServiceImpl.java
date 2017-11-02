@@ -100,7 +100,7 @@ public class CategoryServiceImpl implements ICategoryService {
     public ServiceResponse getCategoryAndDeepChildCategory(Integer parentId){
         List<Integer> allcategoryId= Lists.newArrayList();//guava封装的集合
         Set<Category> categories= Sets.newHashSet();
-        findChildCategroy(categories,parentId);
+        findChildCategory(categories,parentId);
         if (parentId!=null){
             for (Category category:categories) {
                 allcategoryId.add(category.getId());
@@ -109,18 +109,36 @@ public class CategoryServiceImpl implements ICategoryService {
         return ServiceResponse.createBySuccess("请求成功",allcategoryId);
     }
 
+    //==============================================================前端接口逻辑============================//
+
+    /**
+     * 查找父分类
+     * @return
+     */
+    public ServiceResponse categoryFirstLevel(){
+        List<Category> categories=categoryMapper.selectCategoryParentLevel(0);
+        if (categories!=null&&categories.size()>0){
+            return ServiceResponse.createBySuccess("请求成功",categories);
+        }else {
+            return ServiceResponse.createByError("没有分类");
+        }
+    }
+
+
+
+    //=====================================公共逻辑============================================//
 
     //通过chon重写hashcode和equals方法来判断两个对象是否相同，如果相同则equals返回true，那么他们hashcode要返回相同
     //但是如果hashcode相同，他们的equals返回不一定为true
     //递归算法，算出子节点
-    public Set<Category> findChildCategroy(Set<Category> categorySet,Integer parentId){
+    public Set<Category> findChildCategory(Set<Category> categorySet,Integer parentId){
         Category category=categoryMapper.selectByPrimaryKey(parentId);
         if (category!=null){
             categorySet.add(category);
         }
         List<Category> categories=categoryMapper.selectCategoryByParentId(parentId);
         for (Category categoryItem:categories){
-            findChildCategroy(categorySet,categoryItem.getId());
+            findChildCategory(categorySet,categoryItem.getId());
         }
         return categorySet;
     }

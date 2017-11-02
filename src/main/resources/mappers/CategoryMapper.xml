@@ -122,4 +122,14 @@
     from ican_category
     WHERE parent_id=#{parent}
   </select>
+
+  <!--查询出父分类-->
+  <select id="selectCategoryParentLevel" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM
+    ican_category
+    WHERE parent_id=#{parentId}
+  </select>
+
 </mapper>

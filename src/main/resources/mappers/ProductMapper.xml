@@ -186,7 +186,7 @@
     ORDER BY id ASC
   </select>
 
-<!--根据id和名字查询商品，使用where标签，会把AND自动换为where-->
+<!--根据id和名字查 模糊查询（%字%） 使用where标签，里面的AND会被where自动替换-->
   <select id="selectProductByNameAndId" resultMap="BaseResultMap" parameterType="map">
     SELECT <include refid="Base_Column_List"/>
     FROM
@@ -201,4 +201,31 @@
    </where>
   </select>
 
+
+  <select id="selectProductByKeywordAndCategoryId" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM  ican_product
+    WHERE status=1
+      <if test="keyword!=null">
+        AND name LIKE #{keyword}
+      </if>
+      <if test="productIdList!=null">
+        AND categoryot_id IN
+        <foreach collection="productIdList" item="item" index="index" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+  </select>
+
+  <!--查询同一分类下的所有产品-->
+  <select id="selectProductByCategoryId" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM
+    ican_product
+    WHERE
+    categoryot_id=#{categoryId}
+  </select>
+  
 </mapper>

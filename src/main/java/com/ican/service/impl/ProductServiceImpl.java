@@ -9,16 +9,17 @@ import com.ican.dao.CategoryMapper;
 import com.ican.dao.ProductMapper;
 import com.ican.pojo.Category;
 import com.ican.pojo.Product;
+import com.ican.service.ICategoryService;
 import com.ican.service.IProductService;
 import com.ican.utils.DateTimeUtil;
+import com.ican.utils.PropertisUtil;
 import com.ican.vo.ProductDetailVo;
 import com.ican.vo.ProductListVo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,8 +37,10 @@ public class ProductServiceImpl implements IProductService {
     @Autowired
     private CategoryMapper categoryMapper;
 
-    @Value("ftp.server.http.prefix")
-    private String productImageHost;//访问图片的地址前缀
+    @Autowired
+    private ICategoryService iCategoryService;
+
+
 
     /**
      * 添加和更新产品
@@ -48,7 +51,7 @@ public class ProductServiceImpl implements IProductService {
         if (product!=null){
             //这是产品的子图，有多张，取其中的一张作为主图
             if (StringUtils.isNoneBlank(product.getSubImages())){
-                String[] subImageArray=product.getSubImages().split(",");
+                String[] subImageArray=product.getSubImages().split(";");
                 if (subImageArray.length>0){
                     product.setMainImage(subImageArray[0]);
                 }
@@ -138,7 +141,7 @@ public class ProductServiceImpl implements IProductService {
         //2.填充sql查询逻辑
         List<Product> productList=productMapper.getProductList();
         List<ProductListVo> productListVoList= Lists.newArrayList();
-        if (CollectionUtils.isEmpty(productList)){
+        if (CollectionUtils.isNotEmpty(productList)){
             for (Product product:productList) {
                 ProductListVo productListVo=assembleProductListVo(product);
                 productListVoList.add(productListVo);
@@ -162,6 +165,7 @@ public class ProductServiceImpl implements IProductService {
     public ServiceResponse productSearch(String productName,Integer productId,Integer pageNumber,Integer pageSiz){
 
         PageHelper.startPage(pageNumber,pageSiz);
+
         if (StringUtils.isNoneBlank(productName)){
             productName=new StringBuilder().append("%").append(productName).append("%").toString();
         }
@@ -178,6 +182,7 @@ public class ProductServiceImpl implements IProductService {
         return ServiceResponse.createBySuccess("请求成功",pageResult);
     }
 
+
     //ProductDetailVo数据的进一步封装
     private ProductDetailVo assembleProductDetailVo(Product product){
         ProductDetailVo productDetailVo=new ProductDetailVo();
@@ -190,7 +195,8 @@ public class ProductServiceImpl implements IProductService {
         productDetailVo.setSubImages(product.getSubImages());
         productDetailVo.setPrice(product.getPrice());
         productDetailVo.setDetail(product.getDetail());
-        productDetailVo.setImageHost(productImageHost);
+        productDetailVo.setStock(product.getStock());
+        productDetailVo.setImageHost(PropertisUtil.getStringProperty("product.imageHost","http://192.168.201.131:8080/webApp/"));
         Category category=categoryMapper.selectByPrimaryKey(product.getCategoryotId());
         if (category==null){
             productDetailVo.setParentCategoryId(0);
@@ -215,7 +221,111 @@ public class ProductServiceImpl implements IProductService {
         productListVo.setMainImage(product.getMainImage());
         productListVo.setSubImages(product.getSubImages());
         productListVo.setPrice(product.getPrice());
-        productListVo.setImageHost(productImageHost);
+        productListVo.setImageHost(PropertisUtil.getStringProperty("product.imageHost","http://192.168.201.131:8080/webApp/"));
         return productListVo;
     }
+
+
+    //---------------------------------------------------前端接口服务---------------------------------//
+
+    /**
+     * 商品的具体内容
+     * @param productId 商品id
+     * @return
+     */
+    public ServiceResponse<ProductDetailVo> frontGetProductDetails(Integer productId){
+        if (productId!=null){
+            Product product=productMapper.selectByPrimaryKey(productId);
+            if (product!=null){
+                if (product.getStatus()==Constract.ProductStatus.PRODUCT_ONLINE){
+                    ProductDetailVo productDetailVo=assembleProductDetailVo(product);
+                    return ServiceResponse.createBySuccess("请求成功",productDetailVo);
+                }else {
+                    return ServiceResponse.createByError("该商品已经下架或者删除");
+                }
+            }else {
+                return ServiceResponse.createByError("该商品已经下架或者删除");
+            }
+        }else {
+            return ServiceResponse.createByError("参数错误,没有传参");
+        }
+    }
+
+    /**
+     * 根据关键字和分类id搜索产品
+     * @param keyword 关键字
+     * @param categoryId 分类id
+     * @param pageNumber
+     * @param pageSize
+     * @param orderBy 排序类型
+     * @return
+     */
+    public ServiceResponse<PageInfo> frontGetProductByKeyWordAndCategoryId(String keyword,Integer categoryId,Integer pageNumber,
+                                                                      Integer pageSize,String orderBy){
+        if (StringUtils.isBlank(keyword)&&categoryId==null){
+            return ServiceResponse.createByError("参数错误");
+        }
+        List<Integer> categoryIdsList=new ArrayList<>();
+        if (categoryId!=null){
+            Category category=categoryMapper.selectByPrimaryKey(categoryId);
+            if (category==null&&StringUtils.isBlank(keyword)){
+                //没有该分类并且没有关键字，返回为空
+                PageHelper.startPage(pageNumber,pageSize);
+                List<ProductListVo> productListVoList=Lists.newArrayList();
+                PageInfo pageInfo=new PageInfo(productListVoList);
+                return ServiceResponse.createBySuccess(pageInfo);
+            }
+            categoryIdsList= (List<Integer>) iCategoryService.getCategoryAndDeepChildCategory(category.getId()).getData();
+        }
+        //关键字不为空,根据关键字和查询条件查询
+        if (StringUtils.isNotBlank(keyword)){
+            keyword=new StringBuilder().append("%").append(keyword).append("%").toString();
+        }
+        //排序处理
+        PageHelper.startPage(pageNumber,pageSize);
+        if (StringUtils.isNotBlank(orderBy)){
+            //是否包含这个排序规则
+            if (Constract.ProductListOrderBy.ORDER_ASC_DESC.contains(orderBy)){
+                String[] orderByArray=orderBy.split("_");
+                //排序规则
+                PageHelper.orderBy(orderByArray[0]+" "+orderByArray[1]);
+            }
+        }
+        //sql查询
+        List<Product> productList=productMapper.selectProductByKeywordAndCategoryId(StringUtils.isBlank(keyword)?null:keyword,
+                categoryIdsList.size()==0?null:categoryIdsList);
+        List<ProductListVo> productListVoList=Lists.newArrayList();
+        for (Product product:productList) {
+            ProductListVo productListVo=assembleProductListVo(product);
+            productListVoList.add(productListVo);
+        }
+        PageInfo pageInfo=new PageInfo(productList);
+        pageInfo.setList(productListVoList);
+        return ServiceResponse.createBySuccess("请求成功",pageInfo);
+    }
+
+    /**
+     * 同一分类下的所有产品
+     * @param categoryId 分类id
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
+    public ServiceResponse getParallelProduct(Integer categoryId,Integer pageNumber,Integer pageSize){
+        if (categoryId==null&&!(categoryId instanceof Integer)){
+            return ServiceResponse.createByError("参数错误");
+        }else {
+            PageHelper.startPage(pageNumber,pageSize);
+            List<Product> productList=productMapper.selectProductByCategoryId(categoryId);
+            List<ProductListVo> productListVoList=Lists.newArrayList();
+            for (Product product : productList) {
+               ProductListVo productListVo=assembleProductListVo(product);
+                productListVoList.add(productListVo);
+            }
+            PageInfo pageInfo=new PageInfo(productList);
+            pageInfo.setList(productListVoList);
+            return ServiceResponse.createBySuccess("请求成功",pageInfo);
+        }
+    }
+
 }

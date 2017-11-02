@@ -1,7 +1,9 @@
 package com.ican.service;
 
+import com.github.pagehelper.PageInfo;
 import com.ican.common.ServiceResponse;
 import com.ican.pojo.Product;
+import com.ican.vo.ProductDetailVo;
 
 /**
  * 产品服务逻辑接口
@@ -51,4 +53,34 @@ public interface IProductService {
      * @return 查询结果
      */
     ServiceResponse productSearch(String productName,Integer productId,Integer pageNumber,Integer pageSiz);
+
+    //===========================前端请求接口======================//
+
+    /**
+     * 商品的具体内容
+     * @param productId 商品id
+     * @return 商品的具体内容
+     */
+    ServiceResponse<ProductDetailVo> frontGetProductDetails(Integer productId);
+
+    /**
+     * 根据关键字和分类id搜索产品
+     * @param keyword 关键字
+     * @param categoryId 分类id
+     * @param pageNumber
+     * @param pageSize
+     * @param orderBy 排序类型
+     * @return
+     */
+    ServiceResponse<PageInfo> frontGetProductByKeyWordAndCategoryId(String keyword, Integer categoryId, Integer pageNumber,
+                                                               Integer pageSize, String orderBy);
+
+    /**
+     * 同一分类下的所有产品
+     * @param categoryId 分类id
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
+    ServiceResponse getParallelProduct(Integer categoryId,Integer pageNumber,Integer pageSize);
 }

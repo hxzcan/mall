@@ -49,11 +49,8 @@ public class PropertisUtil {
      * @return 值
      */
     public static String getStringProperty(String key){
-        String value=properties.getProperty(key.trim());
-        if (StringUtils.isBlank(value)){
-            return null;
-        }
-        return value.trim();
+
+        return getStringProperty(key,null);
     }
 
     /**
