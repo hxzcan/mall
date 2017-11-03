@@ -2,6 +2,8 @@ package com.ican.controller.frontend;
 
 import com.ican.common.Constract;
 import com.ican.common.ServiceResponse;
+import com.ican.common.TokenCache;
+import com.ican.pojo.User;
 import com.ican.service.ICartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,8 +33,16 @@ public class CartController {
      */
     @RequestMapping(value = "add_product2Cart.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServiceResponse addProduct2Cart(Integer userId,Integer count,Integer productId){
-        return iCartService.addProduct2Cart(userId,count,productId);
+    public ServiceResponse addProduct2Cart(String appToken,Integer userId,Integer count,Integer productId){
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.addProduct2Cart(userId,count,productId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
     }
 
     /**
@@ -44,8 +54,16 @@ public class CartController {
      */
     @RequestMapping(value = "update_product2Cart.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServiceResponse updateProduct2Cart(Integer userId,Integer count,Integer productId){
-        return iCartService.updateProduct2Cart(userId,count,productId);
+    public ServiceResponse updateProduct2Cart(String appToken,Integer userId,Integer count,Integer productId){
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.updateProduct2Cart(userId,count,productId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
     }
 
     /**
@@ -56,8 +74,18 @@ public class CartController {
      */
     @RequestMapping(value = "delete_productFromCart.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServiceResponse deleteProductFromCart(Integer userId,String productIds){
-        return iCartService.deleteProductFromCart(userId,productIds);
+    public ServiceResponse deleteProductFromCart(String appToken,Integer userId,String productIds){
+
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.deleteProductFromCart(userId,productIds);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     /**
@@ -67,8 +95,17 @@ public class CartController {
      */
     @RequestMapping(value = "get_productFromCart.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse getProductFromCart(Integer userId){
-        return iCartService.getProductFromCart(userId);
+    public ServiceResponse getProductFromCart(String appToken,Integer userId){
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.getProductFromCart(userId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     //全选 全反选
@@ -80,8 +117,18 @@ public class CartController {
      */
     @RequestMapping(value = "select_all.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse selectAll(Integer userId){
-        return iCartService.selectOrUnSelect(userId, Constract.CartProductStatus.CHECKED,null);
+    public ServiceResponse selectAll(String appToken,Integer userId){
+
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.selectOrUnSelect(userId, Constract.CartProductStatus.CHECKED,null);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     /**
@@ -92,8 +139,18 @@ public class CartController {
      */
     @RequestMapping(value = "unSelect_all.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse unSelectAll(Integer userId){
-        return iCartService.selectOrUnSelect(userId, Constract.CartProductStatus.UNCHECKED,null);
+    public ServiceResponse unSelectAll(String appToken,Integer userId){
+
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.selectOrUnSelect(userId, Constract.CartProductStatus.UNCHECKED,null);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     //单独选 单独反选
@@ -106,8 +163,18 @@ public class CartController {
      */
     @RequestMapping(value = "select_single.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse selectSingle(Integer userId,Integer productId){
-        return iCartService.selectOrUnSelect(userId,Constract.CartProductStatus.CHECKED,productId);
+    public ServiceResponse selectSingle(String appToken,Integer userId,Integer productId){
+
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.selectOrUnSelect(userId,Constract.CartProductStatus.CHECKED,productId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     /**
@@ -119,8 +186,17 @@ public class CartController {
      */
     @RequestMapping(value = "unSelect_single.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse unSelectSingle(Integer userId,Integer productId){
-        return iCartService.selectOrUnSelect(userId,Constract.CartProductStatus.UNCHECKED,productId);
+    public ServiceResponse unSelectSingle(String appToken,Integer userId,Integer productId){
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.selectOrUnSelect(userId,Constract.CartProductStatus.UNCHECKED,productId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
+
     }
 
     //查询当前购物车里面的产品数量
@@ -131,8 +207,16 @@ public class CartController {
      */
     @RequestMapping(value = "getCount_FromCart.do",method = RequestMethod.GET)
     @ResponseBody
-    public ServiceResponse getCountFromCart(Integer userId){
-        return iCartService.getCountFromCart(userId);
+    public ServiceResponse getCountFromCart(String appToken,Integer userId){
+        User user= (User) TokenCache.getValue(appToken);
+        if (user==null){
+            return ServiceResponse.createByError("用户未登录");
+        }
+        if (user.getId()==userId){
+            return iCartService.getCountFromCart(userId);
+        }else {
+            return ServiceResponse.createByError("参数错误");
+        }
     }
 
 }

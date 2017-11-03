@@ -23,11 +23,11 @@ public class TokenCache {
     //maximumSize 设置最大容量
     //expireAfterAccess 设置有效期
     //LRU算法，最小
-    public static LoadingCache<String,String> localCache= CacheBuilder.newBuilder()
+    public static LoadingCache<String,Object> localCache= CacheBuilder.newBuilder()
                     .initialCapacity(1000)
                     .maximumSize(10000)
                     .expireAfterAccess(12, TimeUnit.HOURS)
-                    .build(new CacheLoader<String, String>() {
+                    .build(new CacheLoader<String, Object>() {
                         //默认的方法加载实现
                         //党调用方法取值的时候，如果key没有对应的值，就调用这个方法进行加载
                         @Override
@@ -41,7 +41,7 @@ public class TokenCache {
      * @param key 键
      * @param value 值
      */
-    public static void  setKey(String key,String value){
+    public static void  setKey(String key,Object value){
         localCache.put(key,value);
     }
 
@@ -50,8 +50,8 @@ public class TokenCache {
      * @param key 键
      * @return 值
      */
-    public static String getValue(String key){
-        String value=null;
+    public static Object getValue(String key){
+        Object value=null;
         try {
             value=localCache.get(key);
             if (("null").equals(value)){

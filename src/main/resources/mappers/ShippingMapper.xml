@@ -40,10 +40,10 @@
     values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{receiveName,jdbcType=VARCHAR}, 
       #{receivePhone,jdbcType=VARCHAR}, #{receiveMobile,jdbcType=VARCHAR}, #{receiveProvince,jdbcType=VARCHAR}, 
       #{receiveCity,jdbcType=VARCHAR}, #{receiveDistrict,jdbcType=VARCHAR}, #{receiveAddress,jdbcType=VARCHAR}, 
-      #{receiveZip,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+      #{receiveZip,jdbcType=VARCHAR}, now(), now()
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.ican.pojo.Shipping" >
+  <insert id="insertSelective" parameterType="com.ican.pojo.Shipping" useGeneratedKeys="true" keyProperty="id" >
     insert into ican_shipping
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -76,12 +76,8 @@
       <if test="receiveZip != null" >
         receive_zip,
       </if>
-      <if test="createTime != null" >
         create_time,
-      </if>
-      <if test="updateTime != null" >
         update_time,
-      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -114,14 +110,12 @@
       <if test="receiveZip != null" >
         #{receiveZip,jdbcType=VARCHAR},
       </if>
-      <if test="createTime != null" >
-        #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null" >
-        #{updateTime,jdbcType=TIMESTAMP},
-      </if>
+       now(),
+       now(),
+
     </trim>
   </insert>
+
   <update id="updateByPrimaryKeySelective" parameterType="com.ican.pojo.Shipping" >
     update ican_shipping
     <set >
@@ -155,9 +149,7 @@
       <if test="createTime != null" >
         create_time = #{createTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="updateTime != null" >
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
-      </if>
+        update_time =now(),
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -173,7 +165,47 @@
       receive_address = #{receiveAddress,jdbcType=VARCHAR},
       receive_zip = #{receiveZip,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
+      update_time = now()
     where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!--查询用户所有的收货地址-->
+  <select id="selectAddressByUserId" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM
+    ican_shipping
+    WHERE user_id=#{userId}
+  </select>
+
+  <select id="selectDetailAddressByUserIdAndAddressId" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM
+    ican_shipping
+    WHERE user_id=#{userId}
+    AND id=#{addressId}
+  </select>
+
+  <!--删除收货地址-->
+  <delete id="deleteAddressByUserIdAndAddressId" parameterType="map">
+    DELETE FROM ican_shipping
+    WHERE user_id=#{userId} AND id=#{addressId}
+  </delete>
+
+  <update id="updateAddressByShipping" parameterType="com.ican.pojo.Shipping" >
+    update ican_shipping
+    set
+    receive_name = #{receiveName,jdbcType=VARCHAR},
+    receive_phone = #{receivePhone,jdbcType=VARCHAR},
+    receive_mobile = #{receiveMobile,jdbcType=VARCHAR},
+    receive_province = #{receiveProvince,jdbcType=VARCHAR},
+    receive_city = #{receiveCity,jdbcType=VARCHAR},
+    receive_district = #{receiveDistrict,jdbcType=VARCHAR},
+    receive_address = #{receiveAddress,jdbcType=VARCHAR},
+    receive_zip = #{receiveZip,jdbcType=VARCHAR},
+    create_time = #{createTime,jdbcType=TIMESTAMP},
+    update_time = now()
+    where id = #{id,jdbcType=INTEGER} and user_id=#{userId}
   </update>
 </mapper>

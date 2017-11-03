@@ -186,4 +186,15 @@ public class UserController {
         }
         return iUserService.getInformation(user.getId());
     }
+
+
+
+    //=========================================app登录===========================================//
+    @RequestMapping(value = "/app_login.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServiceResponse<User> appLogin(String username, String password){
+        //service->mybatis-dao
+        ServiceResponse response=iUserService.login(username,password);
+        return response;
+    }
 }

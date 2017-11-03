@@ -160,4 +160,5 @@
     SELECT IFNULL(sum(quantity),0) AS count FROM ican_cart
     WHERE user_id=#{userId}
   </select>
+
 </mapper>

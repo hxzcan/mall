@@ -3,10 +3,12 @@ package com.ican.service.impl;
 import com.ican.common.Constract;
 import com.ican.common.ServiceResponse;
 import com.ican.common.TokenCache;
+import com.ican.common.objectConversion.User2UserVo;
 import com.ican.dao.UserMapper;
 import com.ican.pojo.User;
 import com.ican.service.IUserService;
 import com.ican.utils.MD5Util;
+import com.ican.vo.UserVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,8 +46,13 @@ public class UserServiceImpl implements IUserService {
         if (user==null){
             return  ServiceResponse.createByError("密码错误");
         }
-        user.setPassword(StringUtils.EMPTY);
-        return  ServiceResponse.createBySuccess("登录成功",user);
+        //生成登录的UUID
+        String app_login_token=UUID.randomUUID().toString();
+        //放进缓存中
+        TokenCache.setKey(app_login_token,user);
+        UserVo userVo= User2UserVo.user2UserVo(user);
+        userVo.setToken(app_login_token);
+        return  ServiceResponse.createBySuccess("登录成功",userVo);
     }
 
     /**
@@ -166,7 +173,7 @@ public class UserServiceImpl implements IUserService {
             return ServiceResponse.createByError("用户不存在");
         }
 
-        String token=TokenCache.getValue(Constract.TOKEN_PREFIX+username);
+        String token= (String) TokenCache.getValue(Constract.TOKEN_PREFIX+username);
         if (StringUtils.isBlank(token)){
             return ServiceResponse.createByError("Token过期或者无效");
         }

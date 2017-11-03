@@ -95,7 +95,7 @@ public class CartServiceImpl implements ICartService {
                 cart.setQuantity(count);
                int updateCount=cartMapper.updateByPrimaryKeySelective(cart);
                 if (updateCount>0){
-                    return ServiceResponse.createBySuccess("更新成功");
+                    return this.getProductFromCart(userId);
                 }else {
                     return ServiceResponse.createByError("更新失败");
                 }
@@ -121,7 +121,7 @@ public class CartServiceImpl implements ICartService {
         List<String> productIdList= Splitter.on(",").splitToList(productIds);//guava的分割
         int deleteCount=cartMapper.deleteCartByUserIdAndProductIds(userId,productIdList);
         if (deleteCount>0){
-            return ServiceResponse.createBySuccess("删除成功");
+            return this.getProductFromCart(userId);
         }else {
             return ServiceResponse.createByError("删除失败");
         }
@@ -255,7 +255,7 @@ public class CartServiceImpl implements ICartService {
     }
 
     /**
-     * 判断购物车中的商品是否全选
+     * 判断购物车中的商品是否全选,如果有一个没有勾选就是false,查询的时候查没有勾选的
      * @return
      */
     private Boolean getCartAllCheckedStatus(Integer userId){
